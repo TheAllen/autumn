@@ -1,0 +1,15 @@
+workspace = { members = ["ai_func_proc_macro"] }
+[package]
+name = "autumn"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ai_functions = "0.1.1"
+crossterm = "0.27.0"
+dotenv = "0.15.0"
+reqwest = { version = "0.11.24", features = ["json"] }
+tokio = { version = "1.36.0", features = ["full"] }
+ai_func_proc_macro = { path = "./ai_func_proc_macro" }
