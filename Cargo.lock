@@ -52,6 +52,8 @@ dependencies = [
  "crossterm",
  "dotenv",
  "reqwest",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 

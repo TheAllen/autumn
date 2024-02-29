@@ -1,6 +1,7 @@
 mod ai_functions;
-
+mod models;
 mod utils;
+
 use utils::command_line::get_user_input;
 
 fn main() {
