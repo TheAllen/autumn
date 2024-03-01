@@ -21,7 +21,17 @@ pub async fn call_gpt(message: Vec<Message>) -> Result<String, Box<dyn std::erro
     let key: String = env::var("OPEN_AI_KEY").expect("Could not find OPENAI key from .env file");
 
     // Create the Headers
-    let header_map: HeaderMap = HeaderMap::new();
+    let mut header_map: HeaderMap = HeaderMap::new();
+
+    header_map.insert("authorization",
+        HeaderValue::from_str(&format!("Bearer {}", key).as_str())
+        .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new (e) })? // propagate error up if any encountered
+    );
+
+    header_map.insert("OpenAI-Organization",
+        HeaderValue::from_str(&org)
+        .map_err(|e| -> Box<dyn std::error::Error + Send> { Box::new(e) })?
+    );
 
     let combine: String = vec![url, org, key].join("");
 
