@@ -1,4 +1,5 @@
 mod ai_functions;
+mod agents;
 mod models;
 mod utils;
 
