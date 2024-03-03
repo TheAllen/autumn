@@ -1,13 +1,12 @@
+use crate::agents::base::agent_traits::BasicAgentTraits;
 use crate::models::general::llm::Message;
-
-use super::agent_traits::BasicAgentTraits;
 
 #[derive(Debug, PartialEq)]
 pub enum AgentState {
     Discovery,
     Working,
     UnitTesting,
-    Finished
+    Finished,
 }
 
 #[derive(Debug)]
@@ -15,19 +14,21 @@ pub struct AgentAttributes {
     pub objective: String,
     pub position: String,
     pub state: AgentState,
-    pub memory: Vec<Message>
+    pub memory: Vec<Message>,
 }
 
-impl BasicAgentTraits for AgentAttributes {
-    fn new(objective: String, position: String) -> Self {
-        Self {
+impl AgentAttributes {
+    pub fn new(objective: String, position: String) -> Self {
+        AgentAttributes {
             objective,
             position,
             state: AgentState::Discovery,
-            memory: Vec::new()
+            memory: Vec::new(),
         }
     }
+}
 
+impl BasicAgentTraits for AgentAttributes {
     fn print_agent_attributes(&self) {
         println!("{:?}", self);
     }
