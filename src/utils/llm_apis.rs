@@ -56,10 +56,30 @@ pub async fn call_gpt(messages: Vec<Message>) -> Result<String, Box<dyn std::err
     Ok(content)
 }       
 
+// Converts function structure to static string reference
+pub fn api_instruction_wrapper(func: fn(& str) -> &'static str, user_input: &str) -> Message {
+    let ai_func: &str = func(user_input);
+
+    // Instruction to the LLM
+    let msg: String = format!(
+        "FUNCTION: {}
+        INSTRUCTION: You are a function printer, You ONLY print the results of functions.
+        Nothing else. No commentary. Here is the input of the function: {}.
+        Print out what the function will return.",
+        ai_func, user_input
+    );
+
+    Message {
+        role: "system".to_string(),
+        content: msg
+    }
+}
+
 
 #[cfg(test)]
 mod tests{
     use super::*;
+    use crate::ai_functions::ai_functions::print_project_two_scope;
 
     #[tokio::test]
     async fn tests_call_gpt() {
@@ -74,5 +94,12 @@ mod tests{
         } else {
             panic!("Something went wrong with tests_cal_gpt");
         }
+    }
+
+    #[test]
+    fn tests_api_wrapper() {
+        let func_str = api_instruction_wrapper(print_project_two_scope, "TESTING");
+        dbg!(func_str);
+        
     }
 }
