@@ -62,7 +62,11 @@ pub fn print_project_two_scope(_project_description: &str) {
     println!(OUTPUT)
 }
 
-/* Backend Developer */
+/* Solutions Architect AI Functions */
+
+/* Backend Developer AI Functions */
+
+
 
 #[cfg(test)]
 mod tests {

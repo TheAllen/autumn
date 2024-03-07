@@ -57,7 +57,7 @@ pub async fn call_gpt(messages: Vec<Message>) -> Result<String, Box<dyn std::err
 }       
 
 // Converts function structure to static string reference
-pub fn api_instruction_wrapper(func: fn(& str) -> &'static str, user_input: &str) -> Message {
+fn api_instruction_wrapper(func: fn(&str) -> &'static str, user_input: &str) -> Message {
     let ai_func: &str = func(user_input);
 
     // Instruction to the LLM
@@ -75,11 +75,36 @@ pub fn api_instruction_wrapper(func: fn(& str) -> &'static str, user_input: &str
     }
 }
 
+// Request to GPT or LLM to get response
+pub async fn request_task_llm(ai_func: fn(&str) -> &'static str, user_req: &str) -> String {
+    let req_str: Message = api_instruction_wrapper(ai_func, user_req);
+
+    // Make a request to LLM GPT
+    let llm_res = call_gpt(vec![req_str.clone()]).await;
+
+    match llm_res {
+        Ok(res) => res,
+        Err(e) => {
+            println!("Error calling the LLM: {}", e);
+            println!("Calling the GPT again...");
+            call_gpt(vec![req_str.clone()]).await.expect("Failed to call LLM twice")
+        },
+    }
+}
+
 
 #[cfg(test)]
 mod tests{
+    use crossterm::cursor::DisableBlinking;
+
     use super::*;
     use crate::ai_functions::ai_functions::print_project_two_scope;
+
+    #[tokio::test]
+    async fn example_call_gpt() {
+        let sample_request_gpt = request_task_llm(print_project_two_scope, "Build me a simple todo app with get and post request endpoints").await;
+        dbg!(sample_request_gpt);
+    }
 
     #[tokio::test]
     async fn tests_call_gpt() {
@@ -100,6 +125,12 @@ mod tests{
     fn tests_api_wrapper() {
         let func_str = api_instruction_wrapper(print_project_two_scope, "TESTING");
         dbg!(func_str);
-        
+    }
+
+    #[tokio::test]
+    async fn tests_request_task_llm() {
+        let project_req = "I want to build a application that allows me to forecast stock and crypto data";
+        let wrapped_req = request_task_llm(print_project_two_scope, project_req).await;
+        dbg!(wrapped_req);
     }
 }
