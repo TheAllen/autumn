@@ -24,7 +24,7 @@ pub struct RouteObject {
 
 #[derive(Debug, Serialize)]
 pub struct ProjectSpec {
-    pub project_description: String,
+    pub project_description: Option<String>,
     pub project_scope: Option<String>,
     pub external_urls: Option<Vec<String>>,
     pub backend_code: Option<String>,
@@ -34,7 +34,7 @@ pub struct ProjectSpec {
 
 impl ProjectSpec {
     pub fn new(
-        project_description: String,
+        project_description: Option<String>,
         project_scope: Option<String>,
         external_urls: Option<Vec<String>>,
         backend_code: Option<String>,
@@ -60,5 +60,8 @@ pub trait SpecialFunction: Debug {
     fn get_attributes_from_agent(&self) -> &AgentAttributes;
 
     // The function in which all agents will execute their logic in
-    async fn execute(&mut self, proj_spec: &mut ProjectSpec) -> Result<(), Box<dyn std::error::Error>>;
+    async fn execute(
+        &mut self, 
+        proj_spec: &mut ProjectSpec
+    ) -> Result<(), Box<dyn std::error::Error>>;
 }

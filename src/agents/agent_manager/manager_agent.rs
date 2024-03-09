@@ -1,5 +1,8 @@
 use crate::agents::base::agent_base::{AgentAttributes, AgentState};
 use crate::agents::base::agent_traits::{ProjectSpec, SpecialFunction};
+use crate::utils::llm_apis::request_task_llm;
+use crate::ai_functions::ai_functions::convert_user_input_to_goal;
+
 
 #[derive(Debug)]
 pub struct ManagerAgent {
@@ -10,7 +13,7 @@ pub struct ManagerAgent {
 
 impl ManagerAgent {
 
-    pub async fn new(user_input: String) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new() -> Result<Self, Box<dyn std::error::Error>> {
         // Initializing manager agent attributes
         let attributes: AgentAttributes = AgentAttributes::new(
             "manage agents that are building the website for the end user".to_string(),
@@ -19,7 +22,7 @@ impl ManagerAgent {
 
         // Creating the project spec object for other agents to use
         let project_spec: ProjectSpec = ProjectSpec::new(
-            user_input, // TODO: change the user input once running through GPT API
+            None,
             None, // Defined by Solutions Architect
             None,
             None,
@@ -35,6 +38,14 @@ impl ManagerAgent {
             agents
         })
     }
+
+    pub async fn articulate_project_description(&mut self, user_req: String) {
+
+        let project_description: String = request_task_llm(convert_user_input_to_goal, user_req).await;
+
+        self.project_spec.project_description = Some(project_description);
+
+    }
 }
 
 #[cfg(test)]
@@ -43,8 +54,8 @@ mod tests {
 
     #[tokio::test]
     async fn tests_creating_managing_agent() {
-        let managing_agent = ManagerAgent::new("Build a simple weather app".to_string()).await;
-
+        let mut managing_agent = ManagerAgent::new().unwrap();
+        managing_agent.articulate_project_description("Create a simple todo app".to_string()).await;
         dbg!(managing_agent);
     }
 }
