@@ -2,6 +2,7 @@ use crate::agents::base::agent_base::{AgentAttributes, AgentState};
 use crate::agents::base::agent_traits::{ProjectSpec, SpecialFunction};
 use crate::utils::llm_apis::request_task_llm;
 use crate::ai_functions::ai_functions::convert_user_input_to_goal;
+use crate::utils::command_line::PrintMessage;
 
 
 #[derive(Debug)]
@@ -39,9 +40,12 @@ impl ManagerAgent {
         })
     }
 
-    pub async fn articulate_project_description(&mut self, user_req: String) {
+    pub async fn articulate_project_description(&mut self, user_req: String, agent_operation: &str) {
 
         let project_description: String = request_task_llm(convert_user_input_to_goal, user_req).await;
+        let agent_pos: String = self.attributes.position.clone();
+
+        PrintMessage::Info.print_agent_msg(&agent_pos, agent_operation);
 
         self.project_spec.project_description = Some(project_description);
 
@@ -55,7 +59,7 @@ mod tests {
     #[tokio::test]
     async fn tests_creating_managing_agent() {
         let mut managing_agent = ManagerAgent::new().unwrap();
-        managing_agent.articulate_project_description("Create a simple todo app".to_string()).await;
+        managing_agent.articulate_project_description("Create a simple todo app".to_string(), get_function_string!(convert_user_input_to_goal)).await;
         dbg!(managing_agent);
     }
 }
