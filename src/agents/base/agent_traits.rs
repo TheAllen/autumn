@@ -25,7 +25,7 @@ pub struct RouteObject {
 #[derive(Debug, Serialize)]
 pub struct ProjectSpec {
     pub project_description: Option<String>,
-    pub project_scope: Option<String>,
+    pub project_scope: Option<ProjectScope>,
     pub external_urls: Option<Vec<String>>,
     pub backend_code: Option<String>,
     pub frontend_code: Option<String>,
@@ -35,7 +35,7 @@ pub struct ProjectSpec {
 impl ProjectSpec {
     pub fn new(
         project_description: Option<String>,
-        project_scope: Option<String>,
+        project_scope: Option<ProjectScope>,
         external_urls: Option<Vec<String>>,
         backend_code: Option<String>,
         frontend_code: Option<String>,
@@ -50,6 +50,13 @@ impl ProjectSpec {
             api_endpoint_schema,
         }
     }
+}
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+pub struct ProjectScope {
+    pub is_crud_required: bool,
+    pub is_user_login_and_logout: bool,
+    pub is_external_urls_required: bool
 }
 
 // TODO: Double check if the async_trait is necessary for this

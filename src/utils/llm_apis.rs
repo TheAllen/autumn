@@ -1,5 +1,8 @@
 use dotenv::dotenv;
+use serde::de::DeserializeOwned;
+use crate::agents::base::agent_traits::ProjectScope;
 use crate::models::general::llm::{APIResponse, ChatCompletion, Message};
+use crate::utils::command_line::PrintMessage;
 use reqwest::Client;
 use reqwest::header::{HeaderMap, HeaderValue};
 use std::env;
@@ -75,8 +78,13 @@ fn api_instruction_wrapper(func: fn(&str) -> &'static str, user_input: &str) -> 
     }
 }
 
-// Request to GPT or LLM to get response
-pub async fn request_task_llm(ai_func: fn(&str) -> &'static str, user_req: String) -> String {
+// Request to GPT or LLM to get response in string
+pub async fn request_task_llm(
+    ai_func: fn(&str) -> &'static str,
+    user_req: String,
+    agent_position: &str,
+    agent_operation: &str
+) -> String {
     let req_str: Message = api_instruction_wrapper(ai_func, &user_req);
 
     // Make a request to LLM GPT
@@ -92,16 +100,36 @@ pub async fn request_task_llm(ai_func: fn(&str) -> &'static str, user_req: Strin
     }
 }
 
+// Request to GPT or LLM to get response in flexible types
+pub async fn request_task_llm_deserialized<T: DeserializeOwned>(
+    ai_func: fn(&str) -> &'static str,
+    user_req: String,
+    agent_position: &str,
+    agent_operation: &str
+) -> T {
+    let llm_res_str = request_task_llm(ai_func, user_req, agent_position, agent_operation).await;
+    
+    let deserialized_obj: T = serde_json::from_str(llm_res_str.as_str()).expect("Failed to decode LLM response.");
+
+    deserialized_obj
+}
+
 
 #[cfg(test)]
 mod tests{
 
+    use crate::ai_functions::ai_functions::print_project_scope;
+
     use super::*;
-    use crate::ai_functions::ai_functions::print_project_two_scope;
 
     #[tokio::test]
     async fn example_call_gpt() {
-        let sample_request_gpt = request_task_llm(print_project_two_scope, "Build me a simple todo app with get and post request endpoints".to_string()).await;
+        let sample_request_gpt = request_task_llm(
+            print_project_scope, 
+            "Build me a simple todo app with get and post request endpoints".to_string(),
+            "Project Manager",
+            get_function_string!(print_project_scope)
+        ).await;
         dbg!(sample_request_gpt);
     }
 
@@ -122,14 +150,14 @@ mod tests{
 
     #[test]
     fn tests_api_wrapper() {
-        let func_str = api_instruction_wrapper(print_project_two_scope, "TESTING");
+        let func_str = api_instruction_wrapper(print_project_scope, "TESTING");
         dbg!(func_str);
     }
 
     #[tokio::test]
     async fn tests_request_task_llm() {
         let project_req = "I want to build a application that allows me to forecast stock and crypto data".to_string();
-        let wrapped_req = request_task_llm(print_project_two_scope, project_req).await;
+        let wrapped_req = request_task_llm(print_project_scope, project_req, "Project Manager", get_function_string!(print_project_scope)).await;
         dbg!(wrapped_req);
     }
 }

@@ -40,15 +40,35 @@ impl ManagerAgent {
         })
     }
 
+    // Step 1. Generate a project description for Solutions Architect agent to interpret
     pub async fn articulate_project_description(&mut self, user_req: String, agent_operation: &str) {
 
-        let project_description: String = request_task_llm(convert_user_input_to_goal, user_req).await;
+        let project_description: String = request_task_llm(
+            convert_user_input_to_goal, 
+            user_req,
+            &self.attributes.position,
+            get_function_string!(convert_user_input_to_goal)
+        ).await;
         let agent_pos: String = self.attributes.position.clone();
 
         PrintMessage::Info.print_agent_msg(&agent_pos, agent_operation);
 
         self.project_spec.project_description = Some(project_description);
 
+    }
+
+    fn add_agent(&mut self, agent: Box<dyn SpecialFunction>) {
+        self.agents.push(agent);
+    }
+    
+    pub async fn execute_workflow(&self) {
+
+        // Adding all the agents
+        // TODO
+
+        for agent in &self.agents {
+            // Execute agents workflow
+        }
     }
 }
 
