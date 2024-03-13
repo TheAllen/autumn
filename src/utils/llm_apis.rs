@@ -87,6 +87,8 @@ pub async fn request_task_llm(
 ) -> String {
     let req_str: Message = api_instruction_wrapper(ai_func, &user_req);
 
+    PrintMessage::Info.print_agent_msg(agent_position, agent_operation);
+
     // Make a request to LLM GPT
     let llm_res = call_gpt(vec![req_str.clone()]).await;
 
@@ -107,6 +109,7 @@ pub async fn request_task_llm_deserialized<T: DeserializeOwned>(
     agent_position: &str,
     agent_operation: &str
 ) -> T {
+    PrintMessage::Info.print_agent_msg(agent_position, agent_operation);
     let llm_res_str = request_task_llm(ai_func, user_req, agent_position, agent_operation).await;
     
     let deserialized_obj: T = serde_json::from_str(llm_res_str.as_str()).expect("Failed to decode LLM response.");
