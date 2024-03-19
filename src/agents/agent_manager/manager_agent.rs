@@ -1,5 +1,5 @@
 use crate::agents::base::agent_base::{AgentAttributes, AgentState};
-use crate::agents::base::agent_traits::{ProjectSpec, SpecialFunction};
+use crate::agents::base::agent_traits::{ProjectSpec, SpecialFunctions};
 use crate::utils::llm_apis::request_task_llm;
 use crate::ai_functions::ai_functions::convert_user_input_to_goal;
 use crate::utils::command_line::PrintMessage;
@@ -9,7 +9,7 @@ use crate::utils::command_line::PrintMessage;
 pub struct ManagerAgent {
     attributes: AgentAttributes,
     project_spec: ProjectSpec,
-    agents: Vec<Box<dyn SpecialFunction>>, // list of agents manager is managing
+    agents: Vec<Box<dyn SpecialFunctions>>, // list of agents manager is managing
 }
 
 impl ManagerAgent {
@@ -31,7 +31,7 @@ impl ManagerAgent {
             None
         );
 
-        let agents: Vec<Box<dyn SpecialFunction>> = vec![];
+        let agents: Vec<Box<dyn SpecialFunctions>> = vec![];
 
         Ok(Self {
             attributes,
@@ -57,7 +57,7 @@ impl ManagerAgent {
 
     }
 
-    fn add_agent(&mut self, agent: Box<dyn SpecialFunction>) {
+    fn add_agent(&mut self, agent: Box<dyn SpecialFunctions>) {
         self.agents.push(agent);
     }
     

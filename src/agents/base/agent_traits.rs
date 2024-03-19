@@ -61,7 +61,7 @@ pub struct ProjectScope {
 
 // TODO: Double check if the async_trait is necessary for this
 #[async_trait]
-pub trait SpecialFunction: Debug {
+pub trait SpecialFunctions: Debug {
 
     // Manager can get attributes of other agents
     fn get_attributes_from_agent(&self) -> &AgentAttributes;
