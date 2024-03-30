@@ -17,6 +17,6 @@ mod tests {
 
     #[test]
     fn generate_code_file() {
-        save_code_to_file("./generated_code/code_file.text", "Testing Testing");
+        save_code_to_file("./generated_code/code_file.txt", "Testing Testing");
     }
 }

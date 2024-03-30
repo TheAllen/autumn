@@ -1,5 +1,7 @@
-use crate::utils::general::save_code_to_file;
+use async_trait::async_trait;
+use crate::{agents::base::{agent_base::AgentAttributes, agent_traits::{ProjectSpec, SpecialFunctions}}, utils::general::save_code_to_file};
 
+#[derive(Debug)]
 pub struct BackendAgent {
     attributes: AgentAttributes,
 }
@@ -10,6 +12,19 @@ impl BackendAgent {
         Self { attributes }
     }
 }
+
+#[async_trait]
+impl SpecialFunctions for BackendAgent {
+    fn get_attributes_from_agent(&self) -> &AgentAttributes {
+        &self.attributes
+    }
+
+    async fn execute(&mut self, proj_spec: &mut ProjectSpec) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+}
+
+
 
 #[cfg(test)]
 mod tests {
