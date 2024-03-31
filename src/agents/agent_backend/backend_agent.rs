@@ -31,5 +31,12 @@ mod tests {
     use super::*;
 
     #[test]
-    fn create_backend_agent() {}
+    fn create_backend_agent() {
+        let backend_agent = BackendAgent::new(
+            "Build server side application".to_owned(),
+            "Backend Agent".to_owned()
+        );
+
+        dbg!(backend_agent);
+    }
 }
