@@ -1,5 +1,19 @@
 use async_trait::async_trait;
-use crate::{agents::base::{agent_base::AgentAttributes, agent_traits::{ProjectSpec, SpecialFunctions}}, utils::general::save_code_to_file};
+use crate::{
+    agents::base::{
+        agent_base::{
+            AgentAttributes, 
+            AgentState
+        }, 
+        agent_traits::{
+            BasicAgentTraits,
+            ProjectSpec, 
+            SpecialFunctions
+        }
+    }, 
+    utils::general::save_code_to_file
+};
+
 
 #[derive(Debug)]
 pub struct BackendAgent {
@@ -19,7 +33,24 @@ impl SpecialFunctions for BackendAgent {
         &self.attributes
     }
 
-    async fn execute(&mut self, proj_spec: &mut ProjectSpec) -> Result<(), Box<dyn std::error::Error>> {
+    async fn execute(
+        &mut self, 
+        proj_spec: &mut ProjectSpec
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        // Keep execution until AgentState::Finished state has been reached
+        while self.attributes.state != AgentState::Finished {
+            match self.attributes.state {
+                AgentState::Discovery => {
+                },
+                AgentState::Working => {
+                },
+                AgentState::UnitTesting => {
+                },
+                _ => {
+                    self.attributes.update_agent_state(AgentState::Finished);
+                }
+            }
+        }
         Ok(())
     }
 }
