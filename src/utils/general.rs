@@ -11,6 +11,11 @@ pub fn save_code_to_file(filepath: &str, content: &str) {
         .expect(format!("Could not write to filepath: {}", filepath).as_str());
 }
 
+// Read code from filepath
+pub fn read_code_template(filepath: &str) -> String {
+    fs::read_to_string(filepath).expect("Failed to read code template from filepath")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

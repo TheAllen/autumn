@@ -1,3 +1,4 @@
+use crate::agents::agent_architect::architect_agent::ArchitectAgent;
 use crate::agents::base::agent_base::{AgentAttributes, AgentState};
 use crate::agents::base::agent_traits::{ProjectSpec, SpecialFunctions};
 use crate::utils::llm_apis::request_task_llm;
@@ -61,10 +62,18 @@ impl ManagerAgent {
         self.agents.push(agent);
     }
     
-    pub async fn execute_workflow(&self) {
+    pub async fn execute_workflow(&mut self) {
 
-        // Adding all the agents
-        // TODO
+        // Adding all the agents:
+        // 1. Solutions Architect
+        // 2. Backend Developer
+        // 3. Frontend Developer
+        self.add_agent(Box::new(
+            ArchitectAgent::new(
+                "Gathers information and design solutions for website development".to_owned(),
+                "Solutions Architect".to_owned()
+            ))
+        );
 
         for agent in &self.agents {
             // Execute agents workflow
