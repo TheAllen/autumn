@@ -10,7 +10,9 @@ use crate::{
             ProjectSpec, 
             SpecialFunctions
         }
-    }, ai_functions::ai_functions::print_backend_webserver_code, utils::{general::{read_code_template, save_code_to_file}, llm_apis::request_task_llm}
+    }, 
+    ai_functions::ai_functions::{print_backend_webserver_code, print_improved_webserver_code}, 
+    utils::{general::{read_code_template, save_code_to_file}, llm_apis::request_task_llm}
 };
 use dotenv::dotenv;
 use std::env;
@@ -19,12 +21,18 @@ use std::env;
 #[derive(Debug)]
 pub struct BackendAgent {
     attributes: AgentAttributes,
+    bug_errors: Option<String>,
+    bug_count: u8
 }
 
 impl BackendAgent {
     pub fn new(objective: String, position: String) -> Self {
         let attributes: AgentAttributes = AgentAttributes::new(objective, position);
-        Self { attributes }
+        Self { 
+            attributes, 
+            bug_errors: None, 
+            bug_count: 0 
+        }
     }
 
     async fn call_initial_backend_code(&mut self, proj_spec: &mut ProjectSpec) {
@@ -46,6 +54,30 @@ impl BackendAgent {
 
         let output_file: String = env::var("CODE_OUTPUT_FILEPATH")
             .expect("Could not find CODE_OUTPUT_FILEPATH value from .env");
+        
+        save_code_to_file(&output_file, &content);
+        proj_spec.backend_code = Some(content);
+    }
+
+    async fn improve_backend_code(&mut self, proj_spec: &mut ProjectSpec) {
+        dotenv().ok();
+
+        let msg_context: String = format!(
+            "CODE TEMPLATE: {:?} \n PROJECT SPECIFICATIONS: {:?} \n",
+            proj_spec.backend_code, proj_spec
+        );
+
+        // Get LLM response
+        let content: String = request_task_llm(
+            print_improved_webserver_code,
+            msg_context,
+            &self.attributes.position,
+            get_function_string!(print_improved_webserver_code)
+        ).await;
+
+        let output_file: String = env::var("CODE_OUTPUT_FILEPATH")
+            .expect("Could not find CODE_OUTPUT_FILEPATH value from .env");
+
         save_code_to_file(&output_file, &content);
         proj_spec.backend_code = Some(content);
     }
@@ -66,10 +98,15 @@ impl SpecialFunctions for BackendAgent {
         while self.attributes.state != AgentState::Finished {
             match self.attributes.state {
                 AgentState::Discovery => {
-                    self.call_initial_backend_code(proj_spec);
+                    self.call_initial_backend_code(proj_spec).await;
                     self.attributes.update_agent_state(AgentState::Working);
+                    continue;
                 },
                 AgentState::Working => {
+                    if self.bug_count == 0 {
+                        self.improve_backend_code(proj_spec).await;
+                    }
+                    continue;
                 },
                 AgentState::UnitTesting => {
                 },
@@ -81,7 +118,6 @@ impl SpecialFunctions for BackendAgent {
         Ok(())
     }
 }
-
 
 
 #[cfg(test)]
