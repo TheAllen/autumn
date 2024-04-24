@@ -12,10 +12,10 @@ use crate::{
         }
     }, 
     ai_functions::ai_functions::{print_backend_webserver_code, print_improved_webserver_code}, 
-    utils::{general::{read_code_template, save_code_to_file}, llm_apis::request_task_llm}
+    utils::{command_line::{confirm_safe_code, PrintMessage}, general::{read_code_template, save_code_to_file}, llm_apis::request_task_llm}
 };
 use dotenv::dotenv;
-use std::env;
+use std::{env, process::{Command, Stdio}};
 
 
 #[derive(Debug)]
@@ -81,6 +81,10 @@ impl BackendAgent {
         save_code_to_file(&output_file, &content);
         proj_spec.backend_code = Some(content);
     }
+
+    async fn fix_backend_bugs(&mut self, proj_spec: &mut ProjectSpec) {
+
+    }
 }
 
 #[async_trait]
@@ -105,10 +109,48 @@ impl SpecialFunctions for BackendAgent {
                 AgentState::Working => {
                     if self.bug_count == 0 {
                         self.improve_backend_code(proj_spec).await;
+                    } else {
+                        self.fix_backend_bugs(proj_spec).await;
                     }
+                    self.attributes.update_agent_state(AgentState::UnitTesting);
                     continue;
                 },
                 AgentState::UnitTesting => {
+                    PrintMessage::Testing.print_agent_msg(
+                        &self.attributes.position, 
+                        "Testing backend code: Ensuring safe code..."
+                    );
+
+                    let is_safe_code: bool = confirm_safe_code();
+                    if !is_safe_code {
+                        // Exit program
+                        panic!("Better work on some AI alignment.");
+                    }
+
+                    PrintMessage::Testing.print_agent_msg(
+                        &self.attributes.position, 
+                        "Backend code united testing: Building web server..."
+                    );
+
+                    // Runs the command `cargo build`
+                    let build_backend_server: std::process::Output = Command::new("cargo")
+                        .arg("build")
+                        .current_dir(env::var("CODE_OUTPUT_FILEPATH").expect("Could not find CODE_OUTPUT_FILEPATH in .env file"))
+                        .stdout(Stdio::piped())
+                        .stdout(Stdio::piped())
+                        .output()
+                        .expect("Failed to build backend application code");
+
+                    // Determin if build errors
+                    if build_backend_server.status.success() {
+                        self.bug_count = 0;
+                        PrintMessage::Testing.print_agent_msg(
+                            self.attributes.position.as_str(), 
+                            "Test server build successfully..."
+                        );
+                    } else {
+
+                    }
                 },
                 _ => {
                     self.attributes.update_agent_state(AgentState::Finished);
