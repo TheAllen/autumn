@@ -88,6 +88,45 @@ pub fn get_user_input(question: &str, question_num: u8) -> String {
     user_input
 }
 
+pub fn confirm_safe_code() -> bool {
+    let mut stdout: std::io::Stdout = stdout();
+    loop {
+        stdout.execute(SetForegroundColor(Color::Blue)).unwrap();
+        println!();
+        print!("WARNING: The code is AI generated. ");
+        println!("Review the code before proceeding.");
+        println!();
+
+        // Reset color
+        stdout.execute(ResetColor).unwrap();
+
+        // Present options
+        stdout.execute(SetForegroundColor(Color::Green)).unwrap();
+        println!("[1][yes][y] Looks good!");
+        stdout.execute(SetForegroundColor(Color::DarkRed)).unwrap();
+        println!("[2][no][n] Let's drop this project.");
+
+        // Reset color
+        stdout.execute(ResetColor).unwrap();
+
+        let mut user_resp: String = String::new();
+        stdin()
+            .read_line(&mut user_resp)
+            .expect("Failed to read user response");
+
+        // Trim whitespace and convert to lowercase
+        let user_resp: String = user_resp.trim().to_lowercase();
+
+        match user_resp.as_str() {
+            "1" | "yes" | "y" => return true,
+            "2" | "no" | "n" => return false,
+            _ => {
+                println!(r#"Invalid input. Please select "1" or "2""#);
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -104,5 +143,10 @@ mod tests {
 
         // Error
         PrintMessage::Error.print_agent_msg("Solutions Architect", "Testing Error");
+    }
+
+    #[test]
+    fn tests_confirm_test_code() {
+        println!("{}", confirm_safe_code());
     }
 }

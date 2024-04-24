@@ -75,8 +75,9 @@ impl ManagerAgent {
             ))
         );
 
-        for agent in &self.agents {
+        for agent in &mut self.agents {
             // Execute agents workflow
+            let _agent_res: Result<(), Box<dyn std::error::Error>> = agent.execute(&mut self.project_spec).await;
         }
     }
 }
